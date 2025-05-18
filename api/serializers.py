@@ -12,16 +12,34 @@ class CinemaSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class ShowTimeSerializer(serializers.ModelSerializer):
+    movie = serializers.CharField(source='movie.title', read_only=True)
+    cinema = serializers.CharField(source='cinema.name', read_only=True)
     class Meta:
         model = ShowTime
-        fields = '__all__'
+        fields = ['id', 'start_time', 'movie', 'cinema']
 
 class SeatSerializer(serializers.ModelSerializer):
+    showtime = serializers.SerializerMethodField()
+
     class Meta:
         model = Seat
-        fields = '__all__'
+        fields = ['id', 'price', 'seat_number', 'is_booked', 'showtime']
+
+    def get_showtime(self, obj):
+        return f"{obj.showtime.start_time} | {obj.showtime.movie.title} | {obj.showtime.cinema.name}"
 
 class BookingSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Booking
-        fields = '__all__'
+      def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # Nếu context có showtime_id, thì lọc ghế theo showtime và isBooking = False
+        request = self.context.get('request')
+        if request:
+            showtime_id = request.query_params.get('showtime')
+            if showtime_id:
+                self.fields['seat'].queryset = Seat.objects.filter(
+                    showtime_id=showtime_id,
+                    isBooking=False
+                )
+            else:
+                self.fields['seat'].queryset = Seat.objects.none()

@@ -22,6 +22,12 @@ class ShowTimeViewSet(viewsets.ModelViewSet):
 class SeatViewSet(viewsets.ModelViewSet):
     queryset = Seat.objects.all()
     serializer_class = SeatSerializer
+    
+class SeatByShowtimeView(APIView):
+    def get(self, request, showtime_id):
+        seats = Seat.objects.filter(showtime_id=showtime_id)
+        serializer = SeatSerializer(seats, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 class BookingViewSet(viewsets.ModelViewSet):
     queryset = Booking.objects.all()

@@ -19,6 +19,14 @@ class Cinema(models.Model):
 
     def __str__(self):
         return self.name
+    
+    
+class Room(models.Model):
+    cinema = models.ForeignKey(Cinema, on_delete=models.CASCADE)
+    room_number = models.CharField(max_length=10, null=True, default=1)
+
+    def __str__(self):
+        return f"{self.cinema.name} - Room {self.room_number}"
 
 # 🎟️ Model Suất Chiếu
 class ShowTime(models.Model):
@@ -29,10 +37,12 @@ class ShowTime(models.Model):
     def __str__(self):
         return f"{self.movie.title} - {self.start_time} at {self.cinema.name}"
 
-# 💺 Model Ghế Ngồi
+# 💺 Model Ghế Ngồi# 💺 Model Ghế ngồi
 class Seat(models.Model):
-    showtime = models.ForeignKey(ShowTime, on_delete=models.CASCADE)
-    seat_number = models.CharField(max_length=10)  # Ví dụ: A1, B5
+    showtime = models.ForeignKey('ShowTime', on_delete=models.CASCADE, related_name='seats')
+    price = models.DecimalField(max_digits=6, decimal_places=2, default=0)
+    seat_number = models.CharField(max_length=10)
+    is_booked = models.BooleanField(default=False)
 
     def __str__(self):
         return f"{self.seat_number} - {self.showtime}"
