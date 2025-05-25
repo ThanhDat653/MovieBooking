@@ -1,13 +1,19 @@
 from django.db import models
 from django.contrib.auth.models import User
+from decimal import Decimal
 
 # 🎬 Model Phim
 class Movie(models.Model):
     title = models.CharField(max_length=200)
     description = models.TextField()
     release_date = models.DateField()
+    end_date = models.DateField(null=True, blank=True, help_text="Ngày ngừng chiếu")
     duration = models.IntegerField(help_text="Duration in minutes")
     poster = models.ImageField(upload_to='posters/', null=True, blank=True)
+    genre = models.CharField(max_length=100, blank=True, help_text="Thể loại phim")
+    director = models.CharField(max_length=100, blank=True, help_text="Đạo diễn")
+    actors = models.TextField(blank=True, help_text="Diễn viên (cách nhau bởi dấu phẩy)")
+    trailer = models.URLField(blank=True, help_text="Đường dẫn video trailer")
 
     def __str__(self):
         return self.title
@@ -40,7 +46,7 @@ class ShowTime(models.Model):
 # 💺 Model Ghế Ngồi# 💺 Model Ghế ngồi
 class Seat(models.Model):
     showtime = models.ForeignKey('ShowTime', on_delete=models.CASCADE, related_name='seats')
-    price = models.DecimalField(max_digits=6, decimal_places=2, default=0)
+    price = models.DecimalField(max_digits=9, decimal_places=2, default=Decimal("79000.00"))
     seat_number = models.CharField(max_length=10)
     is_booked = models.BooleanField(default=False)
 

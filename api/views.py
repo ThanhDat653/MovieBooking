@@ -1,4 +1,4 @@
-from rest_framework import viewsets
+from rest_framework import viewsets, generics
 from .models import Movie, Cinema, ShowTime, Seat, Booking
 from .serializers import MovieSerializer, CinemaSerializer, ShowTimeSerializer, SeatSerializer, BookingSerializer
 from django.contrib.auth.models import User
@@ -6,6 +6,8 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from django.contrib.auth import authenticate, login, logout
+from django.utils import timezone
+from django.db.models import Q
 
 class MovieViewSet(viewsets.ModelViewSet):
     queryset = Movie.objects.all()
@@ -63,3 +65,21 @@ class LogoutAPIView(APIView):
     def post(self, request):
         logout(request)
         return Response({"message": "Đăng xuất thành công!"})
+
+class UpcomingMovieListAPIView(generics.ListAPIView):
+    serializer_class = MovieSerializer
+
+    def get_queryset(self):
+        today = timezone.now().date()
+        return Movie.objects.filter(release_date__gt=today)
+
+class NowShowingMovieListAPIView(generics.ListAPIView):
+    serializer_class = MovieSerializer
+
+    def get_queryset(self):
+        today = timezone.now().date()
+        return Movie.objects.filter(
+            release_date__lt=today
+        ).filter(
+            Q(end_date__isnull=True) | Q(end_date__gt=today)
+        )
